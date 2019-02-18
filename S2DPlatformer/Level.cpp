@@ -6,6 +6,8 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
+#include <direct.h>
+
 
 const Vector2 Level::InvalidPosition = Vector2(-1.0f, -1.0f);
 const int Level::PointsPerSecond = 5;
@@ -20,8 +22,41 @@ Level::Level(int levelIndex)
 	_exit = InvalidPosition;
 	_reachedExit = false;
 	_player = nullptr;
+	_gemsCollected = 0;
+	_gemsSpawned = 0;
+	_levelindex = levelIndex;
 
 	LoadTiles(levelIndex);
+
+	stringstream intindexStr;
+	intindexStr << levelIndex;
+	string fileName = intindexStr.str();
+
+	int size = 0;
+
+	mkdir("highScores");
+
+	std::ifstream fsFile("highScores/highscores_" + fileName + ".dat");
+	std::string line;
+
+	if (fsFile) {
+
+		int curIndex = 0;
+
+		while (std::getline(fsFile, line)) {
+
+			// skip empty lines:
+			if (line.empty())
+				continue;
+
+			
+			highScores[curIndex] = std::stoi(line);
+			curIndex++;
+			if (curIndex > 5) { break; }
+		}
+
+	}
+	std::sort(highScores, highScores + 5, std::greater<int>());
 
 	// Load background layer textures. For now, all levels must
 	// use the same backgrounds and only use the left-most part of them.
@@ -36,6 +71,12 @@ Level::Level(int levelIndex)
 		s.clear();
 		s.str(string());
 	}
+
+	s << "Content/Tiles/BlockB1.png";
+	startingTexture = new Texture2D();
+	startingTexture->Load(s.str().c_str(), true);
+	s.clear();
+	s.str(string());
 
 	// Load sounds.
 	_exitReachedSound = new SoundEffect();
@@ -91,6 +132,112 @@ bool Level::ReachedExit()
 	return _reachedExit;
 }
 
+int Level::GetIndex() 
+{
+	return _levelindex;
+}
+
+Vector2 Level::screenSpaceToTiles(int x , int y) 
+{
+	
+	x = floor(x / 40);
+	y = floor(y / 32);
+
+	return Vector2(x, y);
+}
+
+vector<vector<Tile*>>* Level::getTiles()
+{
+	return _tiles;
+}
+
+vector<Gem*> Level::getGems() 
+{
+	return _gems;
+}
+
+void Level::SetGems(vector<Gem*> temp)
+{
+	_gems = temp;
+}
+
+vector<Enemy*> Level::getEnemies()
+{
+	return _enemies;
+}
+
+bool Level::isLevelEditing() 
+{
+	return _islevelEditing;
+}
+
+bool Level::SaveScore()
+{
+
+	if (isLevelEditing()) 
+	{
+		return false;
+	}
+
+	std::sort(highScores, highScores + 5, std::greater<int>());
+
+	bool hasChanged = false;
+
+	for (size_t i = 0; i != 5; i++) {
+
+		highScores[i] = (highScores[i] == -842150451 ? 0 : highScores[i]);
+
+		if (_score > highScores[i]) {
+
+			hasChanged = true;
+
+			if (i == 5) {
+				highScores[i] = _score;
+				break;
+			}
+
+			int x = 4;
+
+			for (x; x != i; x--) {
+				highScores[x] = highScores[x - 1];
+			}
+
+			highScores[i] = _score;
+			break;
+
+		}
+	}
+
+	if (hasChanged) {
+
+		std::stringstream ss;
+		for (size_t i = 0; i != 5; ++i)
+		{
+			if (i != 0)
+				ss << "\n";
+			ss << (highScores[i] == -842150451 ? 0 : highScores[i]);
+		}
+		std::string s = ss.str();
+
+		stringstream intindexStr;
+		intindexStr << Level::GetIndex();
+		string intIndex = intindexStr.str();
+
+		std::ofstream ofs;
+		ofs.open("highScores/highscores_" + intIndex + ".dat");
+		
+		if (ofs.is_open())
+		{
+			ofs << s;
+			ofs.close();
+		}
+
+	}
+
+
+	return true;
+}
+
 float Level::GetTimeRemaining()
 {
 	return _timeRemaining;
@@ -107,6 +254,10 @@ int Level::GetHeight()
 	return _tiles->at(0).size();
 }
 
+void Level::ToggleLevelEditor() 
+{
+	_islevelEditing = !_islevelEditing;
+}
 
 void Level::LoadTiles(int levelIndex)
 {
@@ -263,8 +414,11 @@ Tile* Level::LoadEnemyTile(int x, int y, char* spriteSet)
 Tile* Level::LoadGemTile(int x, int y)
 {
 	Vector2 position = GetBounds(x, y).Center();
-	_gems.push_back(new Gem(this, new Vector2(position.X, position.Y)));
+	Gem* curGem = new Gem(this, new Vector2(position.X, position.Y));
+	curGem->basePos = Vector2(x, y);
+	_gems.push_back(curGem);
 
+	_gemsSpawned++;
     return new Tile(nullptr, TileCollision::Passable);
 }
 
@@ -285,6 +439,9 @@ Rect Level::GetBounds(int x, int y)
 	return Rect((float)(x * Tile::Width), (float)(y * Tile::Height), Tile::Width, Tile::Height);
 }
 
+int Level::GetHighScore() {
+	return (highScores[0]);
+}
 
 void Level::Update(int elapsedGameTime)
 {
@@ -294,17 +451,19 @@ void Level::Update(int elapsedGameTime)
         // Still want to perform physics on the player.
         _player->ApplyPhysics(elapsedGameTime);
     }
-    else if (ReachedExit())
+    else if (ReachedExit() && !isLevelEditing())
     {
         // Animate the time being converted into points.
 		float seconds = MathHelper::Round((elapsedGameTime / 1000.0f) * 100.0f);
 		seconds = MathHelper::Min(seconds, ceilf(_timeRemaining / 1000.0f));
-        _timeRemaining -= seconds * 1000.0f;
+        _timeRemaining -= seconds * 500.0f;
         _score += (int)seconds * PointsPerSecond;
     }
     else
     {
-		_timeRemaining -= elapsedGameTime;
+		if (!isLevelEditing()) 
+			_timeRemaining -= elapsedGameTime;
+
         _player->Update(elapsedGameTime);
         UpdateGems(elapsedGameTime);
 
@@ -321,7 +480,8 @@ void Level::Update(int elapsedGameTime)
 
         if (_player->IsAlive() &&
             _player->IsOnGround() &&
-			_player->GetBoundingRectangle().Contains(_exit))
+			_player->GetBoundingRectangle().Contains(_exit) &&
+			!isLevelEditing())
 			//_player->GetBoundingRectangle().Intersects(rectExit))
         {
             OnExitReached();
@@ -341,7 +501,7 @@ void Level::UpdateGems(int elapsedGameTime)
 
 		gem->Update(elapsedGameTime);
 
-		if (gem->GetBoundingCircle().Intersects(_player->GetBoundingRectangle()))
+		if (gem->GetBoundingCircle().Intersects(_player->GetBoundingRectangle()) && !isLevelEditing())
 		{
 			OnGemCollected(gem, _player);
 			_gems.erase(_gems.begin() + i--);
@@ -356,7 +516,7 @@ void Level::UpdateEnemies(int elapsedGameTime)
 		(*it)->Update(elapsedGameTime);
 
 		// Touching an enemy instantly kills the player
-		if ((*it)->GetBoundingRectangle().Intersects(_player->GetBoundingRectangle()))
+		if ((*it)->GetBoundingRectangle().Intersects(_player->GetBoundingRectangle()) && !isLevelEditing())
 		{
 			OnPlayerKilled((*it));
 		}
@@ -366,6 +526,8 @@ void Level::UpdateEnemies(int elapsedGameTime)
 void Level::OnGemCollected(Gem* gem, Player* collectedBy)
 {
 	_score += Gem::PointValue;
+
+	_gemsCollected++;
 
 	gem->OnCollected(collectedBy);
 }
@@ -377,6 +539,11 @@ void Level::OnPlayerKilled(Enemy* killedBy)
 
 void Level::OnExitReached()
 {
+	if (!Level::CanFinish()) 
+	{
+		return;
+	}
+
 	_player->OnReachedExit();
 	Audio::Play(_exitReachedSound);
 	_reachedExit = true;
@@ -387,6 +554,10 @@ void Level::StartNewLife()
 	_player->Reset(&_start);
 }
 
+bool Level::CanFinish() 
+{
+	return (_gemsCollected == _gemsSpawned && !isLevelEditing());
+}
 
 void Level::Draw(int elapsedGameTime)
 {
@@ -397,7 +568,8 @@ void Level::Draw(int elapsedGameTime)
 
 	for (vector<Gem*>::iterator it = _gems.begin(); it != _gems.end(); it++)
 	{
-		(*it)->Draw(elapsedGameTime);
+		if ((*it) != nullptr)
+			(*it)->Draw(elapsedGameTime);
 	}
 
 	_player->Draw(elapsedGameTime);
@@ -419,13 +591,13 @@ void Level::DrawTiles()
         {
             // If there is a visible tile in that position
 			Texture2D* texture = _tiles->at(x).at(y)->Texture;
-            if (texture != nullptr)
-            {
-                // Draw it in screen space.
-                Vector2 position((float)x, (float)y);
+			if (texture != nullptr)
+			{
+				// Draw it in screen space.
+				Vector2 position((float)x, (float)y);
 				position *= *Tile::Size;
-                SpriteBatch::Draw(texture, &position);
-            }
+				SpriteBatch::Draw(texture, &position);
+			}
         }
     }
 }

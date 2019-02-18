@@ -65,6 +65,53 @@ void PlatformerGame::HandleInput()
 {
 	// get all of our input states
     _keyboardState = Input::Keyboard::GetState();
+	_mouseState = Input::Mouse::GetState();	
+
+	if (_level->isLevelEditing() && _mouseState->LeftButton == Input::ButtonState::PRESSED) 
+	{
+		Vector2 vec = _level->screenSpaceToTiles(_mouseState->X , _mouseState->Y);
+		vector<vector<Tile*>>* curTiles = (_level->getTiles());
+		Texture2D* texture = curTiles->at(vec.X).at(vec.Y)->Texture;
+
+		if (texture == nullptr)
+		{
+			(*curTiles)[(int)vec.X][(int)vec.Y] = _level->LoadTile((char)'-', (int)vec.X, (int)vec.Y);
+		}
+
+	}
+
+	if (_level->isLevelEditing() && _mouseState->RightButton == Input::ButtonState::PRESSED)
+	{
+		Vector2 vec = _level->screenSpaceToTiles(_mouseState->X, _mouseState->Y);
+		vector<vector<Tile*>>* curTiles = (_level->getTiles());
+		Texture2D* texture = curTiles->at(vec.X).at(vec.Y)->Texture;
+
+		if (texture != nullptr)
+		{
+			delete (*curTiles)[(int)vec.X][(int)vec.Y];
+			(*curTiles)[(int)vec.X][(int)vec.Y] = _level->LoadTile((char)'.', (int)vec.X, (int)vec.Y);
+		}
+		else {
+
+			vector<Gem*> curGems = (_level->getGems());
+
+			for (int i = 0; i < curGems.size(); i++) {
+
+				Gem* curGem = curGems.at(i);
+
+				if (curGem->basePos.X == vec.X && curGem->basePos.Y == vec.Y)
+				{
+					curGems.erase(curGems.begin() + i--);
+					_level->SetGems(curGems);
+					break;
+				}
+
+			}
+
+		}
+
+	}
+
 
     // Exit the game when back is pressed.
 	if (_keyboardState->IsKeyDown(Input::Keys::ESCAPE))
@@ -72,6 +119,11 @@ void PlatformerGame::HandleInput()
 		Audio::Destroy();
 		Input::Destroy();
 		Graphics::Destroy();
+	}
+
+	if (_keyboardState->IsKeyDown(Input::Keys::F8)) {
+		ReloadCurrentLevel();
+		_level->ToggleLevelEditor();
 	}
 
 	bool continuePressed = _keyboardState->IsKeyDown(Input::Keys::SPACE) || _keyboardState->IsKeyDown(Input::Keys::W);
@@ -86,8 +138,10 @@ void PlatformerGame::HandleInput()
         }
         else if (_level->GetTimeRemaining() <= 0)
         {
-            if (_level->ReachedExit())
-                LoadNextLevel();
+			if (_level->ReachedExit()) {
+				_level->SaveScore();
+				LoadNextLevel();
+			}
             else
                 ReloadCurrentLevel();
         }
@@ -107,6 +161,8 @@ void PlatformerGame::LoadNextLevel()
 
     // Load the level.
     _level = new Level(_levelIndex);
+
+	_oldScore = 0;
 }
 
 void PlatformerGame::ReloadCurrentLevel()
@@ -126,7 +182,7 @@ void PlatformerGame::DrawHud()
     // Draw time remaining. Uses modulo division to cause blinking when the
     // player is running out of time.
 	stringstream timeString;
-	timeString << "TIME: " << _level->GetTimeRemaining() / 1000.0f;
+	timeString << "TIME: " << floor(_level->GetTimeRemaining() / 1000.0f);
     Color timeColor;
     if (_level->GetTimeRemaining() > WarningTime ||
         _level->ReachedExit() ||
@@ -142,13 +198,40 @@ void PlatformerGame::DrawHud()
 	SpriteBatch::DrawString(timeString.str().c_str(), &hudLocation, &timeColor);
 
     //Draw score
-    float timeHeight = 18.0f;
+    float timeHeight = 20;
 	stringstream scoreString;
 	Color yellow(255, 255, 0);
-	scoreString << "SCORE: " << _level->GetScore();
+	Color green(0, 255, 0);
+
+	bool _isHighScore = _oldScore > (_level->GetHighScore() == -842150451 ? 0 : _level->GetHighScore());
+
+	_oldScore = _oldScore * (1 - 0.1) + _level->GetScore() * 0.1;
+	scoreString << "SCORE: " << _oldScore;
+	if (_isHighScore) {
+		scoreString << " (Highscore)";
+	}
+
 	SpriteBatch::DrawString(scoreString.str().c_str(), &(hudLocation + Vector2(1.0f, (timeHeight * 1.2f) + 1.0f)), Color::Black);
-	SpriteBatch::DrawString(scoreString.str().c_str(), &(hudLocation + Vector2(0.0f, timeHeight * 1.2f)), &yellow);
+	SpriteBatch::DrawString(scoreString.str().c_str(), &(hudLocation + Vector2(0.0f, timeHeight * 1.2f)), _isHighScore ? &green : &yellow);
            
+	float highscoreHeight = 20.0f * 2;
+	stringstream highscoreString;
+
+	highscoreString << "HIGHSCORE: " << (_level->GetHighScore() == -842150451 ? 0 : _level->GetHighScore());
+	SpriteBatch::DrawString(highscoreString.str().c_str(), &(hudLocation + Vector2(1.0f, (highscoreHeight * 1.2f) + 1.0f)), Color::Black);
+	SpriteBatch::DrawString(highscoreString.str().c_str(), &(hudLocation + Vector2(0.0f, highscoreHeight * 1.2f)), &yellow);
+
+	if (_level->isLevelEditing()) {
+
+		float isLevelEditings = 20.0f * 3;
+		stringstream levelEditingString;
+
+		levelEditingString << "Level editing!";
+		SpriteBatch::DrawString(levelEditingString.str().c_str(), &(hudLocation + Vector2(1.0f, (isLevelEditings * 1.2f) + 1.0f)), Color::Black);
+		SpriteBatch::DrawString(levelEditingString.str().c_str(), &(hudLocation + Vector2(0.0f, isLevelEditings * 1.2f)), Color::Red);
+
+	}
+
     //Determine the status overlay message to show.
     Texture2D* status = nullptr;
     if (_level->GetTimeRemaining() == 0)

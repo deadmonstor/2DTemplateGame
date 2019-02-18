@@ -24,6 +24,7 @@ public:
 
 	const Level* GetLevel() const;
 
+	Vector2 basePos;
 	Vector2 GetPosition() const;
 	Circle GetBoundingCircle() const;
 
@@ -34,8 +35,9 @@ public:
 
 private:
 	Texture2D* _texture;
-    Vector2* _origin;
     SoundEffect* _collectedSound;
+
+	Vector2* _origin;
 
     // The gem is animated from a base position along the Y axis.
     Vector2* _basePosition;

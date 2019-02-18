@@ -40,8 +40,15 @@ private:
 	int _score;
 	bool _reachedExit;
 	float _timeRemaining;
+	int _gemsCollected;
+	int _gemsSpawned;
+	int _levelindex;
+	bool _islevelEditing = false;
+
+	Texture2D* startingTexture;
 
 	SoundEffect* _exitReachedSound;
+	int highScores[5];
 
 public:
 	Level(int levelIndex);
@@ -51,6 +58,15 @@ public:
 	int GetScore();
 	bool ReachedExit();
 	float GetTimeRemaining();
+	bool CanFinish();
+	int GetHighScore();
+	bool SaveScore();
+	int GetIndex();
+	bool isLevelEditing();
+	vector<vector<Tile*>>* getTiles();
+	vector<Gem*> getGems();
+	vector<Enemy*> getEnemies();
+
 
 	int GetWidth();
 	int GetHeight();
@@ -65,14 +81,17 @@ public:
 	Tile* LoadGemTile(int x, int y);
 	TileCollision GetCollision(int x, int y);
 	Rect GetBounds(int x, int y);
+	Vector2 screenSpaceToTiles(int x, int y);
 
 	void Update(int elapsedGameTime);
 	void UpdateGems(int elapsedGameTime);
 	void UpdateEnemies(int elapsedGameTime);
 	void OnGemCollected(Gem* gem, Player* collectedBy);
 	void OnPlayerKilled(Enemy* killedBy);
+	void SetGems(vector<Gem*>);
 	void OnExitReached();
 	void StartNewLife();
+	void ToggleLevelEditor();
 
 	void Draw(int elapsedGameTime);
 	void DrawTiles();

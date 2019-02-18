@@ -20,12 +20,15 @@ private:
     Level* _level;
     bool _wasContinuePressed;
 
+	int _oldScore;
+
     // When the time remaining is less than the warning time, it blinks on the hud
     static const int WarningTime;
 
     // We store our input states so that we only poll once per frame, 
     // then we use the same input state wherever needed
     Input::KeyboardState* _keyboardState;
+	Input::MouseState* _mouseState;
         
     // The number of levels in the Levels directory of our content. We assume that
     // levels in our content are 0-based and that all numbers under this constant
