@@ -19,6 +19,8 @@ private:
     int _levelIndex;
     Level* _level;
     bool _wasContinuePressed;
+	bool _GamePaused = false;
+	int lastPause = 0;
 
 	int _oldScore;
 
@@ -44,7 +46,7 @@ public:
 	void virtual Update(int elapsedTime);
 	void virtual Draw(int elapsedTime);
 
-	void HandleInput();
+	void HandleInput(int elapsedTime);
 	void LoadNextLevel();
 	void ReloadCurrentLevel();
 	void DrawHud();
