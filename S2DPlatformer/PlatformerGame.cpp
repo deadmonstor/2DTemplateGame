@@ -3,7 +3,7 @@
 #include <sstream>
 
 int PlatformerGame::TotalTime = 0;
-const int PlatformerGame::WarningTime = 30000;
+const int PlatformerGame::WarningTime = 10;
 const int PlatformerGame::NumberOfLevels = 3;
 
 PlatformerGame::PlatformerGame(int argc, char* argv[]) : Game(argc, argv), _levelIndex(-1), _level(nullptr)
@@ -42,26 +42,32 @@ void PlatformerGame::Update(int elapsedTime)
 	TotalTime += elapsedTime;
 
 	// Handle polling for our input and handling high-level input
-    HandleInput();
+	HandleInput(TotalTime);
 
-    // update our level, passing down the GameTime along with all of our input states
-	_level->Update(elapsedTime);
+	if (!_GamePaused) {
+
+		// update our level, passing down the GameTime along with all of our input states
+		_level->Update(elapsedTime);
+
+	}
 }
 
 //called every frame to draw the game
 void PlatformerGame::Draw(int elapsedTime)
 {
-	SpriteBatch::BeginDraw();
+	if (!_GamePaused) {
+		SpriteBatch::BeginDraw();
 
-	_level->Draw(elapsedTime);
+		_level->Draw(elapsedTime);
 
-    DrawHud();
+		DrawHud();
 
-	SpriteBatch::EndDraw();
+		SpriteBatch::EndDraw();
+	}
 }
 
 //Deals with all the input handling in the game
-void PlatformerGame::HandleInput()
+void PlatformerGame::HandleInput(int elapsedTime)
 {
 	// get all of our input states
     _keyboardState = Input::Keyboard::GetState();
@@ -114,11 +120,13 @@ void PlatformerGame::HandleInput()
 
 
     // Exit the game when back is pressed.
-	if (_keyboardState->IsKeyDown(Input::Keys::ESCAPE))
+	if (_keyboardState->IsKeyDown(Input::Keys::ESCAPE) && (lastPause < elapsedTime))
 	{
-		Audio::Destroy();
-		Input::Destroy();
-		Graphics::Destroy();
+		//Audio::Destroy();
+		//Input::Destroy();
+		//Graphics::Destroy();
+		lastPause = elapsedTime + 500;
+		_GamePaused = !_GamePaused;
 	}
 
 	if (_keyboardState->IsKeyDown(Input::Keys::F8)) {

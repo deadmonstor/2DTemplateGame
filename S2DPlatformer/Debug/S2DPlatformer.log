@@ -1,4 +1,4 @@
-﻿  Level.cpp
+﻿  PlatformerGame.cpp
 c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.16.27023\include\vector(626): warning C4251: 'std::_Vector_alloc<std::_Vec_base_types<_Ty,_Alloc>>::_Mypair': class 'std::_Compressed_pair<std::allocator<_Ty>,std::_Vector_val<std::_Simple_types<_Ty>>,true>' needs to have dll-interface to be used by clients of class 'std::_Vector_alloc<std::_Vec_base_types<_Ty,_Alloc>>'
           with
           [
@@ -19,15 +19,13 @@ c:\program files (x86)\microsoft visual studio\2017\community\vc\tools\msvc\14.1
           [
               _Ty=S2D::Input::Keys
           ]
-  c:\users\deadm\downloads\offer-holder-day-task-master\offer-holder-day-task-master\s2dplatformer\s2dplatformer\s2d\input.h(108): note: see reference to class template instantiation 'std::vector<S2D::Input::Keys,std::allocator<_Ty>>' being compiled
+  g:\github\2dtemplategame\s2dplatformer\s2d\input.h(108): note: see reference to class template instantiation 'std::vector<S2D::Input::Keys,std::allocator<_Ty>>' being compiled
           with
           [
               _Ty=S2D::Input::Keys
           ]
-c:\users\deadm\downloads\offer-holder-day-task-master\offer-holder-day-task-master\s2dplatformer\s2dplatformer\level.cpp(37): warning C4996: 'mkdir': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _mkdir. See online help for details.
-  c:\program files (x86)\windows kits\10\include\10.0.17763.0\ucrt\direct.h(111): note: see declaration of 'mkdir'
-c:\users\deadm\downloads\offer-holder-day-task-master\offer-holder-day-task-master\s2dplatformer\s2dplatformer\level.cpp(143): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\deadm\downloads\offer-holder-day-task-master\offer-holder-day-task-master\s2dplatformer\s2dplatformer\level.cpp(144): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\deadm\downloads\offer-holder-day-task-master\offer-holder-day-task-master\s2dplatformer\s2dplatformer\level.cpp(146): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\deadm\downloads\offer-holder-day-task-master\offer-holder-day-task-master\s2dplatformer\s2dplatformer\level.cpp(418): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  S2DPlatformer.vcxproj -> C:\Users\deadm\Downloads\Offer-Holder-Day-Task-master\Offer-Holder-Day-Task-master\S2DPlatformer\Debug\S2DPlatformer.exe
+g:\github\2dtemplategame\s2dplatformer\platformergame.cpp(80): warning C4244: 'argument': conversion from 'float' to 'const unsigned int', possible loss of data
+g:\github\2dtemplategame\s2dplatformer\platformergame.cpp(93): warning C4244: 'argument': conversion from 'float' to 'const unsigned int', possible loss of data
+g:\github\2dtemplategame\s2dplatformer\platformergame.cpp(104): warning C4018: '<': signed/unsigned mismatch
+g:\github\2dtemplategame\s2dplatformer\platformergame.cpp(216): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+  S2DPlatformer.vcxproj -> G:\github\2DTemplateGame\Debug\S2DPlatformer.exe
