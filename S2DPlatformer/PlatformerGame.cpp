@@ -2,15 +2,24 @@
 
 #include <sstream>
 
+// 
+// TODO: In editor mode make a "shadow" of a block come up
+// TODO: Make a console so that I can load/save custom maps at run time.
+// TODO: Make sure you cannot place blocks behind the gems on the map
+// TODO: Stop spawn points + end points from spawning if their is already one on the map/ replace them
+// TODO: Make it so gems cannot be placed on the same blocks
+// TODO: Make it so you can remove enemies
+//
+
 int PlatformerGame::TotalTime = 0;
 const int PlatformerGame::WarningTime = 10;
 const int PlatformerGame::NumberOfLevels = 3;
 
 PlatformerGame::PlatformerGame(int argc, char* argv[]) : Game(argc, argv), _levelIndex(-1), _level(nullptr)
 {
-	Audio::Initialise(); //Loads slow - so do it frist
+	Audio::Initialise(); //Loads slow - so do it first
 	Graphics::Initialise(argc, argv, this, 800, 480, false, 25, 25, "Platformer", 60);
-	Input::Initialise(); //Must be initialised after Graphics Initialisation
+	Input::Initialise(); //Must be initialized after Graphics Initialization
 	Graphics::StartGameLoop();
 }
 
@@ -66,58 +75,69 @@ void PlatformerGame::Draw(int elapsedTime)
 	}
 }
 
+
+std::string listArray[] = { "X", "G", "-", "A", "~", ":", "1", "#" };
+
 //Deals with all the input handling in the game
 void PlatformerGame::HandleInput(int elapsedTime)
 {
 	// get all of our input states
     _keyboardState = Input::Keyboard::GetState();
 	_mouseState = Input::Mouse::GetState();	
-
-	if (_level->isLevelEditing() && _mouseState->LeftButton == Input::ButtonState::PRESSED) 
+	if (_level->isLevelEditing())
 	{
-		Vector2 vec = _level->screenSpaceToTiles(_mouseState->X , _mouseState->Y);
-		vector<vector<Tile*>>* curTiles = (_level->getTiles());
-		Texture2D* texture = curTiles->at(vec.X).at(vec.Y)->Texture;
-
-		if (texture == nullptr)
+		if (_mouseState->LeftButton == Input::ButtonState::PRESSED)
 		{
-			(*curTiles)[(int)vec.X][(int)vec.Y] = _level->LoadTile((char)'-', (int)vec.X, (int)vec.Y);
-		}
+			Vector2 vec = _level->screenSpaceToTiles(_mouseState->X, _mouseState->Y);
+			vector<vector<Tile*>>* curTiles = (_level->getTiles());
+			Texture2D* texture = curTiles->at(vec.X).at(vec.Y)->Texture;
 
-	}
+			if (texture == nullptr)
+			{
+				char spawn = '-';
 
-	if (_level->isLevelEditing() && _mouseState->RightButton == Input::ButtonState::PRESSED)
-	{
-		Vector2 vec = _level->screenSpaceToTiles(_mouseState->X, _mouseState->Y);
-		vector<vector<Tile*>>* curTiles = (_level->getTiles());
-		Texture2D* texture = curTiles->at(vec.X).at(vec.Y)->Texture;
+				if (listArray[_level->getLevelEditingID()] != "") {
 
-		if (texture != nullptr)
+					string str = listArray[_level->getLevelEditingID()];
+					spawn = str[0];
+
+				}
+
+				(*curTiles)[(int)vec.X][(int)vec.Y] = _level->LoadTile(spawn, (int)vec.X, (int)vec.Y);
+			}
+
+		}else if (_mouseState->RightButton == Input::ButtonState::PRESSED)
 		{
-			delete (*curTiles)[(int)vec.X][(int)vec.Y];
-			(*curTiles)[(int)vec.X][(int)vec.Y] = _level->LoadTile((char)'.', (int)vec.X, (int)vec.Y);
-		}
-		else {
+			Vector2 vec = _level->screenSpaceToTiles(_mouseState->X, _mouseState->Y);
+			vector<vector<Tile*>>* curTiles = (_level->getTiles());
+			Texture2D* texture = curTiles->at(vec.X).at(vec.Y)->Texture;
 
-			vector<Gem*> curGems = (_level->getGems());
+			if (texture != nullptr)
+			{
+				delete (*curTiles)[(int)vec.X][(int)vec.Y];
+				(*curTiles)[(int)vec.X][(int)vec.Y] = _level->LoadTile((char)'.', (int)vec.X, (int)vec.Y);
+			}
+			else {
 
-			for (int i = 0; i < curGems.size(); i++) {
+				vector<Gem*> curGems = (_level->getGems());
 
-				Gem* curGem = curGems.at(i);
+				for (int i = 0; i < curGems.size(); i++) {
 
-				if (curGem->basePos.X == vec.X && curGem->basePos.Y == vec.Y)
-				{
-					curGems.erase(curGems.begin() + i--);
-					_level->SetGems(curGems);
-					break;
+					Gem* curGem = curGems.at(i);
+
+					if (curGem->basePos.X == vec.X && curGem->basePos.Y == vec.Y)
+					{
+						curGems.erase(curGems.begin() + i--);
+						_level->SetGems(curGems);
+						break;
+					}
+
 				}
 
 			}
 
 		}
-
 	}
-
 
     // Exit the game when back is pressed.
 	if (_keyboardState->IsKeyDown(Input::Keys::ESCAPE) && (lastPause < elapsedTime))
@@ -132,6 +152,16 @@ void PlatformerGame::HandleInput(int elapsedTime)
 	if (_keyboardState->IsKeyDown(Input::Keys::F8)) {
 		ReloadCurrentLevel();
 		_level->ToggleLevelEditor();
+	}
+
+	std::vector< Input::Keys > curKeys = _keyboardState->GetPressedKeys();
+
+	for (int i = 0; i < curKeys.size(); i++) 
+	{
+		if ((int)curKeys[i] >= (int)Input::Keys::KEY0 && ((int)curKeys[i] <= (int)Input::Keys::KEY9))
+		{
+			_level->UpdateSpawningID((int)curKeys[i] - (int)Input::Keys::KEY0);
+		}
 	}
 
 	bool continuePressed = _keyboardState->IsKeyDown(Input::Keys::SPACE) || _keyboardState->IsKeyDown(Input::Keys::W);

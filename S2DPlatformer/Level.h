@@ -85,6 +85,7 @@ public:
 	void Update(int elapsedGameTime);
 	void UpdateGems(int elapsedGameTime);
 	void UpdateEnemies(int elapsedGameTime);
+	void UpdateSpawningID(int spawningID);
 	void OnGemCollected(Gem* gem, Player* collectedBy);
 	void OnPlayerKilled(Enemy* killedBy);
 	void SetGems(vector<Gem*>);

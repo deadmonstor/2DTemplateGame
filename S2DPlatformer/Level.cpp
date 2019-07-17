@@ -236,6 +236,11 @@ void Level::ToggleLevelEditor()
 	_islevelEditing = !_islevelEditing;
 }
 
+void Level::UpdateSpawningID(int spawningID)
+{
+	idSpawning = spawningID;
+}
+
 void Level::LoadTiles()
 {
 	// Load the level and ensure all of the lines are the same length.
