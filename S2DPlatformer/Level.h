@@ -44,6 +44,7 @@ private:
 	int _gemsSpawned;
 	int _levelindex;
 	bool _islevelEditing = false;
+	int idSpawning = 0;
 
 	Texture2D* startingTexture;
 
@@ -60,18 +61,16 @@ public:
 	float GetTimeRemaining();
 	bool CanFinish();
 	int GetHighScore();
-	bool SaveScore();
 	int GetIndex();
 	bool isLevelEditing();
+	int getLevelEditingID();
+	int GetWidth();
+	int GetHeight();
 	vector<vector<Tile*>>* getTiles();
 	vector<Gem*> getGems();
 	vector<Enemy*> getEnemies();
 
-
-	int GetWidth();
-	int GetHeight();
-
-	void LoadTiles(int levelIndex);
+	void LoadTiles();
 	Tile* LoadTile(const char tileType, int x, int y);
 	Tile* LoadTile(const char* name, TileCollision collision);
 	Tile* LoadVarietyTile(const char* baseName, int variationCount, TileCollision collision);
@@ -92,6 +91,8 @@ public:
 	void OnExitReached();
 	void StartNewLife();
 	void ToggleLevelEditor();
+	void LoadScores();
+	void SaveScore();
 
 	void Draw(int elapsedGameTime);
 	void DrawTiles();

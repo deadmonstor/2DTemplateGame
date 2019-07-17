@@ -9,6 +9,7 @@
 #include <direct.h>
 
 
+
 const Vector2 Level::InvalidPosition = Vector2(-1.0f, -1.0f);
 const int Level::PointsPerSecond = 5;
 const int Level::EntityLayer = 2;
@@ -26,37 +27,8 @@ Level::Level(int levelIndex)
 	_gemsSpawned = 0;
 	_levelindex = levelIndex;
 
-	LoadTiles(levelIndex);
-
-	stringstream intindexStr;
-	intindexStr << levelIndex;
-	string fileName = intindexStr.str();
-
-	int size = 0;
-
-	mkdir("highScores");
-
-	std::ifstream fsFile("highScores/highscores_" + fileName + ".dat");
-	std::string line;
-
-	if (fsFile) {
-
-		int curIndex = 0;
-
-		while (std::getline(fsFile, line)) {
-
-			// skip empty lines:
-			if (line.empty())
-				continue;
-
-			
-			highScores[curIndex] = std::stoi(line);
-			curIndex++;
-			if (curIndex > 5) { break; }
-		}
-
-	}
-	std::sort(highScores, highScores + 5, std::greater<int>());
+	LoadTiles();
+	LoadScores();
 
 	// Load background layer textures. For now, all levels must
 	// use the same backgrounds and only use the left-most part of them.
@@ -140,8 +112,8 @@ int Level::GetIndex()
 Vector2 Level::screenSpaceToTiles(int x , int y) 
 {
 	
-	x = floor(x / 40);
-	y = floor(y / 32);
+	x = (int)floor(x / 40);
+	y = (int)floor(y / 32);
 
 	return Vector2(x, y);
 }
@@ -171,12 +143,17 @@ bool Level::isLevelEditing()
 	return _islevelEditing;
 }
 
-bool Level::SaveScore()
+int Level::getLevelEditingID()
+{
+	return idSpawning;
+}
+
+void Level::SaveScore()
 {
 
 	if (isLevelEditing()) 
 	{
-		return false;
+		return;
 	}
 
 	std::sort(highScores, highScores + 5, std::greater<int>());
@@ -215,6 +192,7 @@ bool Level::SaveScore()
 		{
 			if (i != 0)
 				ss << "\n";
+
 			ss << (highScores[i] == -842150451 ? 0 : highScores[i]);
 		}
 		std::string s = ss.str();
@@ -234,8 +212,7 @@ bool Level::SaveScore()
 
 	}
 
-
-	return true;
+	return;
 }
 
 float Level::GetTimeRemaining()
@@ -259,14 +236,14 @@ void Level::ToggleLevelEditor()
 	_islevelEditing = !_islevelEditing;
 }
 
-void Level::LoadTiles(int levelIndex)
+void Level::LoadTiles()
 {
 	// Load the level and ensure all of the lines are the same length.
     int width;
     vector<string>* lines = new vector<string>();
 	fstream stream;
 	stringstream ss;
-	ss << "Content/Levels/" << levelIndex << ".txt";
+	ss << "Content/Levels/" << _levelindex << ".txt";
 	stream.open(ss.str(), fstream::in);
 
 	char* line = new char[256];
@@ -307,6 +284,37 @@ void Level::LoadTiles(int levelIndex)
         cout << "A level must have a starting point.";
     if (_exit == InvalidPosition)
         cout << "A level must have an exit.";
+}
+
+void Level::LoadScores()
+{
+	stringstream intindexStr;
+	intindexStr << _levelindex;
+	string fileName = intindexStr.str();
+	_mkdir("highScores");
+
+	std::ifstream fsFile("highScores/highscores_" + fileName + ".dat");
+	std::string line;
+
+	if (fsFile) {
+
+		int curIndex = 0;
+
+		while (std::getline(fsFile, line)) {
+
+			// skip empty lines:
+			if (line.empty())
+				continue;
+
+
+			highScores[curIndex] = std::stoi(line);
+			curIndex++;
+			if (curIndex > 5) { break; }
+		}
+
+	}
+
+	std::sort(highScores, highScores + 5, std::greater<int>());
 }
 
 Tile* Level::LoadTile(const char tileType, int x, int y)

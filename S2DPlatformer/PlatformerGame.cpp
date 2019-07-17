@@ -213,7 +213,7 @@ void PlatformerGame::DrawHud()
 
 	bool _isHighScore = _oldScore > (_level->GetHighScore() == -842150451 ? 0 : _level->GetHighScore());
 
-	_oldScore = _oldScore * (1 - 0.1) + _level->GetScore() * 0.1;
+	_oldScore = (int)(_oldScore * (1 - 0.1f) + _level->GetScore() * 0.1f);
 	scoreString << "SCORE: " << _oldScore;
 	if (_isHighScore) {
 		scoreString << " (Highscore)";
@@ -234,7 +234,7 @@ void PlatformerGame::DrawHud()
 		float isLevelEditings = 20.0f * 3;
 		stringstream levelEditingString;
 
-		levelEditingString << "Level editing!";
+		levelEditingString << "Level editing! ID: " << _level->getLevelEditingID();
 		SpriteBatch::DrawString(levelEditingString.str().c_str(), &(hudLocation + Vector2(1.0f, (isLevelEditings * 1.2f) + 1.0f)), Color::Black);
 		SpriteBatch::DrawString(levelEditingString.str().c_str(), &(hudLocation + Vector2(0.0f, isLevelEditings * 1.2f)), Color::Red);
 
