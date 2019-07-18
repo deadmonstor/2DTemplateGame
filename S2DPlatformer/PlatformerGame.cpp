@@ -6,8 +6,10 @@
 // TODO: In editor mode make a "shadow" of a block come up
 // TODO: Make a console so that I can load/save custom maps at run time.
 // TODO: Stop spawn points + end points from spawning if their is already one on the map/ replace them
-// TODO: Make it so gems cannot be placed on the same blocks
 // TODO: Make it so you can remove enemies
+// TODO: Make enemies not move when in level editor mode. 
+// TODO: 8 Key does not work in level editor
+//
 //
 
 int PlatformerGame::TotalTime = 0;
@@ -113,7 +115,7 @@ void PlatformerGame::HandleInput(int elapsedTime)
 
 					char spawn = '-';
 
-					if (listArray[_level->getLevelEditingID()] != "") {
+					if (listArray->max_size() > _level->getLevelEditingID()) {
 
 						string str = listArray[_level->getLevelEditingID()];
 						spawn = str[0];
@@ -129,26 +131,31 @@ void PlatformerGame::HandleInput(int elapsedTime)
 		{
 			Vector2 vec = _level->screenSpaceToTiles(_mouseState->X, _mouseState->Y);
 			vector<vector<Tile*>>* curTiles = (_level->getTiles());
-			Texture2D* texture = curTiles->at(vec.X).at(vec.Y)->Texture;
 
-			if (texture != nullptr)
-			{
-				delete (*curTiles)[(int)vec.X][(int)vec.Y];
-				(*curTiles)[(int)vec.X][(int)vec.Y] = _level->LoadTile((char)'.', (int)vec.X, (int)vec.Y);
-			}
-			else {
+			if (curTiles->size() > vec.X && curTiles->at(vec.X).size() > vec.Y && curTiles->at(vec.X).at(vec.Y) != nullptr) {
 
-				vector<Gem*> curGems = (_level->getGems());
+				Texture2D* texture = curTiles->at(vec.X).at(vec.Y)->Texture;
 
-				for (int i = 0; i < curGems.size(); i++) {
+				if (texture != nullptr)
+				{
+					delete (*curTiles)[(int)vec.X][(int)vec.Y];
+					(*curTiles)[(int)vec.X][(int)vec.Y] = _level->LoadTile((char)'.', (int)vec.X, (int)vec.Y);
+				}
+				else {
 
-					Gem* curGem = curGems.at(i);
+					vector<Gem*> curGems = (_level->getGems());
 
-					if (curGem->basePos.X == vec.X && curGem->basePos.Y == vec.Y)
-					{
-						curGems.erase(curGems.begin() + i--);
-						_level->SetGems(curGems);
-						break;
+					for (int i = 0; i < curGems.size(); i++) {
+
+						Gem* curGem = curGems.at(i);
+
+						if (curGem->basePos.X == vec.X && curGem->basePos.Y == vec.Y)
+						{
+							curGems.erase(curGems.begin() + i--);
+							_level->SetGems(curGems);
+							break;
+						}
+
 					}
 
 				}

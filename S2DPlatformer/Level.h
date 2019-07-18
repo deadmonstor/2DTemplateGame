@@ -33,6 +33,7 @@ private:
 
 	Vector2 _start;
 	Vector2 _exit;
+	Vector2 _exitCords;
 
 	static const Vector2 InvalidPosition;
 	static const int PointsPerSecond;

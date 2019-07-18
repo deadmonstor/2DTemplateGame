@@ -397,11 +397,14 @@ Tile* Level::LoadVarietyTile(const char* baseName, int variationCount, TileColli
 
 Tile* Level::LoadStartTile(int x, int y)
 {
-	if (_player != nullptr)
-		cout << "A level may only have one starting point.";
 
-    _start = RectangleExtensions::GetBottomCenter(&(GetBounds(x, y)));
-    _player = new Player(this, &_start);
+	_start = RectangleExtensions::GetBottomCenter(&(GetBounds(x, y)));
+
+	if (_player != nullptr) {
+		cout << "A level may only have one starting point.\n";
+	}else {
+		_player = new Player(this, &_start);
+	}
 
     return new Tile(nullptr, TileCollision::Passable);
 }
@@ -409,9 +412,14 @@ Tile* Level::LoadStartTile(int x, int y)
 Tile* Level::LoadExitTile(int x, int y)
 {
 	if (_exit != InvalidPosition)
-		cout << "A level may only have one exit.";
+	{
+		cout << "A level may only have one exit.\n";
+		delete _tiles->at(_exitCords.X).at(_exitCords.Y);
+		_tiles->at(_exitCords.X).erase(_tiles->at(_exitCords.X).begin() + _exitCords.Y);
+	}
 
 	_exit = GetBounds(x, y).Center();
+	_exitCords = Vector2(x, y);
 
 	return LoadTile("Exit", TileCollision::Passable);
 }
