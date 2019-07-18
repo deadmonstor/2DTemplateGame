@@ -5,7 +5,6 @@
 // 
 // TODO: In editor mode make a "shadow" of a block come up
 // TODO: Make a console so that I can load/save custom maps at run time.
-// TODO: Make sure you cannot place blocks behind the gems on the map
 // TODO: Stop spawn points + end points from spawning if their is already one on the map/ replace them
 // TODO: Make it so gems cannot be placed on the same blocks
 // TODO: Make it so you can remove enemies
@@ -91,19 +90,39 @@ void PlatformerGame::HandleInput(int elapsedTime)
 			Vector2 vec = _level->screenSpaceToTiles(_mouseState->X, _mouseState->Y);
 			vector<vector<Tile*>>* curTiles = (_level->getTiles());
 			Texture2D* texture = curTiles->at(vec.X).at(vec.Y)->Texture;
+			bool canPrecede = true;
+
 
 			if (texture == nullptr)
 			{
-				char spawn = '-';
+				vector<Gem*> curGems = (_level->getGems());
 
-				if (listArray[_level->getLevelEditingID()] != "") {
+				for (int i = 0; i < curGems.size(); i++) {
 
-					string str = listArray[_level->getLevelEditingID()];
-					spawn = str[0];
+					Gem* curGem = curGems.at(i);
+
+					if (curGem->basePos.X == vec.X && curGem->basePos.Y == vec.Y)
+					{
+						canPrecede = false;
+					}
 
 				}
 
-				(*curTiles)[(int)vec.X][(int)vec.Y] = _level->LoadTile(spawn, (int)vec.X, (int)vec.Y);
+				if (canPrecede)
+				{
+
+					char spawn = '-';
+
+					if (listArray[_level->getLevelEditingID()] != "") {
+
+						string str = listArray[_level->getLevelEditingID()];
+						spawn = str[0];
+
+					}
+
+					(*curTiles)[(int)vec.X][(int)vec.Y] = _level->LoadTile(spawn, (int)vec.X, (int)vec.Y);
+
+				}
 			}
 
 		}else if (_mouseState->RightButton == Input::ButtonState::PRESSED)
