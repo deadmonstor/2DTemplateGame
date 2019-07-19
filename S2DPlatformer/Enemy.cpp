@@ -60,6 +60,11 @@ void Enemy::LoadContent(std::string spriteSet)
 
 void Enemy::Update(int elapsedGameTime)
 {
+
+	if (_level != nullptr && _level->isLevelEditing()) {
+		return;
+	}
+
     // Calculate tile position based on the side we are walking towards.
     float posX = _position.X + _localBounds->Width / 2 * (int)_direction;
     int tileX = (int)floor(posX / Tile::Width) - (int)_direction;
@@ -94,11 +99,13 @@ void Enemy::Update(int elapsedGameTime)
 
 void Enemy::Draw(int elapsedGameTime)
 {
+
 	// Stop running when the game is paused or before turning around.
 	if (!_level->GetPlayer()->IsAlive() ||
 		_level->ReachedExit() ||
 		_level->GetTimeRemaining() <= 0 ||
-		_waitTime > 0)
+		_waitTime > 0 || 
+		_level != nullptr && _level->isLevelEditing())
 	{
 		_sprite.PlayAnimation(*_idleAnimation);
 	}

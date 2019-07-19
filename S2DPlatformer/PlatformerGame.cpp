@@ -9,7 +9,6 @@
 // TODO: Make a console so that I can load/save custom maps at run time.
 // TODO: Stop spawn points + end points from spawning if their is already one on the map/ replace them
 // TODO: Make it so you can remove enemies
-// TODO: Make enemies not move when in level editor mode. 
 //
 
 int PlatformerGame::TotalTime = 0;
