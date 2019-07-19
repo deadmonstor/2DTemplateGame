@@ -8,7 +8,6 @@
 // TODO: In editor mode make a "shadow" of a block come up
 // TODO: Make a console so that I can load/save custom maps at run time.
 // TODO: Stop spawn points + end points from spawning if their is already one on the map/ replace them
-// TODO: Make it so you can remove enemies
 //
 
 int PlatformerGame::TotalTime = 0;
@@ -152,6 +151,25 @@ void PlatformerGame::HandleInput(int elapsedTime)
 						{
 							curGems.erase(curGems.begin() + i--);
 							_level->SetGems(curGems);
+							break;
+						}
+
+					}
+
+					vector<Enemy*> curEnemies = (_level->getEnemies());
+
+					for (int i = 0; i < curEnemies.size(); i++) {
+
+						Enemy* curEnemy = curEnemies.at(i);
+						const Vector2* curPosition = curEnemy->GetPosition();
+						int tileX = (int)floor(curPosition->X / Tile::Width);
+						int tileY = (int)floor(curPosition->Y / Tile::Height) - 1;
+
+						if (tileX == vec.X && (tileY == vec.Y || (tileY - 1) == vec.Y) )
+						{
+							curEnemies.erase(curEnemies.begin() + i--);
+							_level->SetEnemies(curEnemies);
+							delete curEnemy;
 							break;
 						}
 

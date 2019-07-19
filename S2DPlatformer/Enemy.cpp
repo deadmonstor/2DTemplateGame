@@ -37,6 +37,11 @@ const Rect Enemy::GetBoundingRectangle() const
 	return Rect(left, top, _localBounds->Width, _localBounds->Height);
 }
 
+const FaceDirection* Enemy::GetDirection() const
+{
+	return &_direction;
+}
+
 void Enemy::LoadContent(std::string spriteSet)
 {
 	spriteSet = "Content/Sprites/" + spriteSet + "/";

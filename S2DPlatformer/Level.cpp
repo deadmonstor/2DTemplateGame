@@ -138,6 +138,11 @@ vector<Enemy*> Level::getEnemies()
 	return _enemies;
 }
 
+void Level::SetEnemies(vector<Enemy*> temp)
+{
+	_enemies = temp;
+}
+
 bool Level::isLevelEditing() 
 {
 	return _islevelEditing;

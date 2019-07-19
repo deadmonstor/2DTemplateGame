@@ -35,6 +35,7 @@ public:
 	const Level* GetLevel() const;
 	const Vector2* GetPosition() const;
 	const Rect GetBoundingRectangle() const;
+	const FaceDirection* GetDirection() const;
 
 private:
 	Level* _level;

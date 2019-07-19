@@ -90,6 +90,7 @@ public:
 	void OnGemCollected(Gem* gem, Player* collectedBy);
 	void OnPlayerKilled(Enemy* killedBy);
 	void SetGems(vector<Gem*>);
+	void SetEnemies(vector<Enemy*>);
 	void OnExitReached();
 	void StartNewLife();
 	void ToggleLevelEditor();
