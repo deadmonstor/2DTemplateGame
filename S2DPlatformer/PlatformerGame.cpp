@@ -1,6 +1,8 @@
 #include "PlatformerGame.h"
 
 #include <sstream>
+#include <iostream>
+
 
 // 
 // TODO: In editor mode make a "shadow" of a block come up
@@ -8,8 +10,6 @@
 // TODO: Stop spawn points + end points from spawning if their is already one on the map/ replace them
 // TODO: Make it so you can remove enemies
 // TODO: Make enemies not move when in level editor mode. 
-// TODO: 8 Key does not work in level editor
-//
 //
 
 int PlatformerGame::TotalTime = 0;
@@ -186,7 +186,14 @@ void PlatformerGame::HandleInput(int elapsedTime)
 	{
 		if ((int)curKeys[i] >= (int)Input::Keys::KEY0 && ((int)curKeys[i] <= (int)Input::Keys::KEY9))
 		{
-			_level->UpdateSpawningID((int)curKeys[i] - (int)Input::Keys::KEY0);
+
+			Input::Keys hackAround = curKeys[i];
+			if ((GetKeyState('8') & 0x8000) && curKeys[i] == Input::Keys::KEY9) {
+				hackAround = (Input::Keys)((int)(curKeys[i]) - 1); // This is needed because the 8 key is incorrectly programmed throughout the dll which I currently don't have access too.
+			}
+
+			_level->UpdateSpawningID((int)hackAround - (int)Input::Keys::KEY0);
+			cout << ((int)hackAround - (int)Input::Keys::KEY0) << " " << i << " " << (int)hackAround << " " << _keyboardState->IsKeyDown(Input::Keys::KEY8) << "\n";
 		}
 	}
 
