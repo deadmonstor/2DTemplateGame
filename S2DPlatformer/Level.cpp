@@ -53,6 +53,7 @@ Level::Level(int levelIndex)
 	// Load sounds.
 	_exitReachedSound = new SoundEffect();
 	_exitReachedSound->Load("Content/Sounds/ExitReached.wav");
+
 }
 
 
@@ -141,6 +142,14 @@ vector<Enemy*> Level::getEnemies()
 void Level::SetEnemies(vector<Enemy*> temp)
 {
 	_enemies = temp;
+}
+
+void Level::SetlevelEditorTile(Tile* temp) 
+{
+	if (levelEditorTile != NULL && levelEditorTile != nullptr)
+		delete levelEditorTile;
+
+	levelEditorTile = temp;
 }
 
 bool Level::isLevelEditing() 
@@ -626,4 +635,24 @@ void Level::DrawTiles()
 			}
         }
     }
+}
+
+void Level::DrawLevelEditorShadow(Input::MouseState* _mouseState)
+{
+
+	if (levelEditorTile && levelEditorTile != NULL && levelEditorTile != nullptr && isLevelEditing()){
+
+		Texture2D* texture = levelEditorTile->Texture;
+
+		if (texture != nullptr)
+		{
+			// Draw it in screen space.
+			Vector2 position = screenSpaceToTiles((float)_mouseState->X, (float)_mouseState->Y);
+
+			position *= *Tile::Size;
+			SpriteBatch::Draw(texture, &position);
+		}
+
+	}
+
 }

@@ -20,6 +20,7 @@ private:
     Level* _level;
     bool _wasContinuePressed;
 	bool _GamePaused = false;
+	bool keyUpdate = true;
 	int lastPause = 0;
 
 	int _oldScore;
@@ -50,6 +51,7 @@ public:
 	void LoadNextLevel();
 	void ReloadCurrentLevel();
 	void DrawHud();
+	void UpdateLevelEditor();
 
 	static int TotalTime;
 };

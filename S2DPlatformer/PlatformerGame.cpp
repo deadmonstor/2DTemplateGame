@@ -5,7 +5,7 @@
 
 
 // 
-// TODO: In editor mode make a "shadow" of a block come up
+// TODO: Make all map editor keys work/ blocks spawn
 // TODO: Make a console so that I can load/save custom maps at run time.
 // TODO: Stop spawn points + end points from spawning if their is already one on the map/ replace them
 //
@@ -51,6 +51,7 @@ void PlatformerGame::Update(int elapsedTime)
 
 	// Handle polling for our input and handling high-level input
 	HandleInput(TotalTime);
+	UpdateLevelEditor();
 
 	if (!_GamePaused) {
 
@@ -59,7 +60,6 @@ void PlatformerGame::Update(int elapsedTime)
 
 	}
 }
-
 //called every frame to draw the game
 void PlatformerGame::Draw(int elapsedTime)
 {
@@ -67,6 +67,7 @@ void PlatformerGame::Draw(int elapsedTime)
 		SpriteBatch::BeginDraw();
 
 		_level->Draw(elapsedTime);
+		_level->DrawLevelEditorShadow(_mouseState);
 
 		DrawHud();
 
@@ -75,7 +76,22 @@ void PlatformerGame::Draw(int elapsedTime)
 }
 
 
-std::string listArray[] = { "X", "G", "-", "A", "~", ":", "1", "#" };
+const std::string listArray[8] = { "X", "G", "-", "A", "~", ":", "1", "#" };
+const std::string LevelEditor[8] = { "Exit", "../Sprites/Gem", "Platform", "../Sprites/MonsterA/Idle", "BlockB0", "BlockB0", "Exit", "BlockA0" };
+
+void PlatformerGame::UpdateLevelEditor()
+{
+
+	if ((sizeof(listArray) / sizeof(*listArray)) > _level->getLevelEditingID()) {
+
+		auto spawnID = LevelEditor[_level->getLevelEditingID()].c_str();
+
+		if (keyUpdate)
+			_level->SetlevelEditorTile(_level->LoadTile(spawnID, TileCollision::Passable));
+
+	}
+}
+
 
 //Deals with all the input handling in the game
 void PlatformerGame::HandleInput(int elapsedTime)
@@ -83,6 +99,7 @@ void PlatformerGame::HandleInput(int elapsedTime)
 	// get all of our input states
     _keyboardState = Input::Keyboard::GetState();
 	_mouseState = Input::Mouse::GetState();	
+
 	if (_level->isLevelEditing())
 	{
 		if (_mouseState->LeftButton == Input::ButtonState::PRESSED)
@@ -117,7 +134,7 @@ void PlatformerGame::HandleInput(int elapsedTime)
 
 						string str = listArray[_level->getLevelEditingID()];
 						spawn = str[0];
-
+						
 					}
 
 					(*curTiles)[(int)vec.X][(int)vec.Y] = _level->LoadTile(spawn, (int)vec.X, (int)vec.Y);
@@ -192,9 +209,15 @@ void PlatformerGame::HandleInput(int elapsedTime)
 		_GamePaused = !_GamePaused;
 	}
 
-	if (_keyboardState->IsKeyDown(Input::Keys::F8)) {
+	if (_keyboardState->IsKeyDown(Input::Keys::F8) && (lastPause < elapsedTime)) {
+		bool isEditing = _level->isLevelEditing();
+
 		ReloadCurrentLevel();
-		_level->ToggleLevelEditor();
+
+		if (!isEditing)
+			_level->ToggleLevelEditor();
+
+		lastPause = elapsedTime + 500;
 	}
 
 	std::vector< Input::Keys > curKeys = _keyboardState->GetPressedKeys();
@@ -210,7 +233,7 @@ void PlatformerGame::HandleInput(int elapsedTime)
 			}
 
 			_level->UpdateSpawningID((int)hackAround - (int)Input::Keys::KEY0);
-			cout << ((int)hackAround - (int)Input::Keys::KEY0) << " " << i << " " << (int)hackAround << " " << _keyboardState->IsKeyDown(Input::Keys::KEY8) << "\n";
+			keyUpdate = true;
 		}
 	}
 

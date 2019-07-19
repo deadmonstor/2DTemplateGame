@@ -38,6 +38,8 @@ private:
 	static const Vector2 InvalidPosition;
 	static const int PointsPerSecond;
 
+	Tile* levelEditorTile = NULL;
+
 	int _score;
 	bool _reachedExit;
 	float _timeRemaining;
@@ -91,6 +93,7 @@ public:
 	void OnPlayerKilled(Enemy* killedBy);
 	void SetGems(vector<Gem*>);
 	void SetEnemies(vector<Enemy*>);
+	void SetlevelEditorTile(Tile* temp);
 	void OnExitReached();
 	void StartNewLife();
 	void ToggleLevelEditor();
@@ -99,5 +102,6 @@ public:
 
 	void Draw(int elapsedGameTime);
 	void DrawTiles();
+	void DrawLevelEditorShadow(Input::MouseState*);
 };
 
