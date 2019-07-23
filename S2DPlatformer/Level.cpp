@@ -622,16 +622,25 @@ void Level::DrawTiles()
 {
 	for (int y = 0; y < GetHeight(); ++y)
     {
-        for (int x = 0; x < GetWidth(); ++x)
-        {
-            // If there is a visible tile in that position
-			Texture2D* texture = _tiles->at(x).at(y)->Texture;
-			if (texture != nullptr)
+		for (int x = 0; x < GetWidth(); ++x)
+		{
+			// If there is a visible tile in that position
+
+			Texture2D* texture;
+
+			if (_tiles->size() > x && _tiles->at(x).size() > y)  // Disgusting but it had to be done for now ( lets leave it here and forget about it forever )
 			{
-				// Draw it in screen space.
-				Vector2 position((float)x, (float)y);
-				position *= *Tile::Size;
-				SpriteBatch::Draw(texture, &position);
+
+				texture = _tiles->at(x).at(y)->Texture;
+
+				if (texture != nullptr && texture != NULL)
+				{
+					// Draw it in screen space.
+					Vector2 position((float)x, (float)y);
+					position *= *Tile::Size;
+					SpriteBatch::Draw(texture, &position);
+				}
+
 			}
         }
     }

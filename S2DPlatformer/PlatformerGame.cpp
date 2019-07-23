@@ -5,7 +5,6 @@
 
 
 // 
-// TODO: Make all map editor keys work/ blocks spawn
 // TODO: Make a console so that I can load/save custom maps at run time.
 // TODO: Stop spawn points + end points from spawning if their is already one on the map/ replace them
 //
@@ -168,6 +167,8 @@ void PlatformerGame::HandleInput(int elapsedTime)
 						{
 							curGems.erase(curGems.begin() + i--);
 							_level->SetGems(curGems);
+							delete curGem;
+							(*curTiles)[(int)vec.X][(int)vec.Y] = _level->LoadTile('.', (int)vec.X, (int)vec.Y);
 							break;
 						}
 
@@ -187,6 +188,7 @@ void PlatformerGame::HandleInput(int elapsedTime)
 							curEnemies.erase(curEnemies.begin() + i--);
 							_level->SetEnemies(curEnemies);
 							delete curEnemy;
+							(*curTiles)[(int)vec.X][(int)vec.Y] = _level->LoadTile('.', (int)vec.X, (int)vec.Y);
 							break;
 						}
 

@@ -31,7 +31,7 @@ enum class TileCollision
 struct Tile
 {
 public:
-    Texture2D* Texture;
+    Texture2D* Texture = NULL;
     TileCollision Collision;
 
     static const int Width;
