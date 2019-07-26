@@ -397,6 +397,9 @@ Tile* Level::LoadTile(const char* name, TileCollision collision)
 	Texture2D* tex = new Texture2D();
 	tex->Load(ss.str().c_str(), true);
 
+	if (tex->GetID() == NULL)
+		return NULL;
+
 	return new Tile(tex, collision);
 }
 
@@ -427,9 +430,13 @@ Tile* Level::LoadExitTile(int x, int y)
 {
 	if (_exit != InvalidPosition)
 	{
-		cout << "A level may only have one exit.\n";
+		if (!isLevelEditing())
+			cout << "A level may only have one exit.\n";
+
 		delete _tiles->at(_exitCords.X).at(_exitCords.Y);
-		_tiles->at(_exitCords.X).erase(_tiles->at(_exitCords.X).begin() + _exitCords.Y);
+
+		Tile* tileType = _tiles->at(_exitCords.X)[_exitCords.Y];
+		(*_tiles)[_exitCords.X][_exitCords.Y] = LoadTile('.', _exitCords.X, _exitCords.Y);
 	}
 
 	_exit = GetBounds(x, y).Center();
@@ -628,10 +635,11 @@ void Level::DrawTiles()
 
 			Texture2D* texture;
 
-			if (_tiles->size() > x && _tiles->at(x).size() > y)  // Disgusting but it had to be done for now ( lets leave it here and forget about it forever )
+			if (_tiles->size() > x && 
+				_tiles->at(x).size() > y)
 			{
 
-				texture = _tiles->at(x).at(y)->Texture;
+				texture = (*_tiles)[x][y]->Texture;
 
 				if (texture != nullptr && texture != NULL)
 				{

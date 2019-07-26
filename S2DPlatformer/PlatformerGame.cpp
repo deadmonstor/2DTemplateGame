@@ -6,7 +6,9 @@
 
 // 
 // TODO: Make a console so that I can load/save custom maps at run time.
-// TODO: Stop spawn points + end points from spawning if their is already one on the map/ replace them
+// TODO: Make game multiplayer
+// TODO: Look into transparent texture manipulation
+// TODO: Refactor level editor placing code. Chuck it into its own class?
 //
 
 int PlatformerGame::TotalTime = 0;
@@ -75,7 +77,7 @@ void PlatformerGame::Draw(int elapsedTime)
 }
 
 
-const std::string listArray[8] = { "X", "G", "-", "A", "~", ":", "1", "#" };
+const char listArray[8] = { 'X', 'G', '-', 'A', '~', ':', '1', '#' };
 const std::string LevelEditor[8] = { "Exit", "../Sprites/Gem", "Platform", "../Sprites/MonsterA/Idle", "BlockB0", "BlockB0", "Exit", "BlockA0" };
 
 void PlatformerGame::UpdateLevelEditor()
@@ -83,10 +85,19 @@ void PlatformerGame::UpdateLevelEditor()
 
 	if ((sizeof(listArray) / sizeof(*listArray)) > _level->getLevelEditingID()) {
 
+
 		auto spawnID = LevelEditor[_level->getLevelEditingID()].c_str();
 
 		if (keyUpdate)
 			_level->SetlevelEditorTile(_level->LoadTile(spawnID, TileCollision::Passable));
+
+	}else {
+
+		_level->UpdateSpawningID(0);
+
+		auto spawnID = LevelEditor[_level->getLevelEditingID()].c_str();
+		
+		_level->SetlevelEditorTile(_level->LoadTile(spawnID, TileCollision::Passable));
 
 	}
 }
@@ -129,10 +140,9 @@ void PlatformerGame::HandleInput(int elapsedTime)
 
 					char spawn = '-';
 
-					if (listArray->max_size() > _level->getLevelEditingID()) {
+					if ((sizeof listArray / sizeof listArray[0]) > _level->getLevelEditingID()) {
 
-						string str = listArray[_level->getLevelEditingID()];
-						spawn = str[0];
+						spawn = listArray[_level->getLevelEditingID()];
 						
 					}
 
