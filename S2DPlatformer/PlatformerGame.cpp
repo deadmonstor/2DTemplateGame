@@ -2,21 +2,61 @@
 
 #include <sstream>
 #include <iostream>
-
+#include <atomic>
+#include <thread>
 
 // 
-// TODO: Make a console so that I can load/save custom maps at run time.
+// TODO: Console done just need to pass args
 // TODO: Make game multiplayer
 // TODO: Look into transparent texture manipulation
 // TODO: Refactor level editor placing code. Chuck it into its own class?
 //
 
+PlatformerGame* game;
+
 int PlatformerGame::TotalTime = 0;
 const int PlatformerGame::WarningTime = 10;
 const int PlatformerGame::NumberOfLevels = 3;
 
+void PlatformerGame::readConsole(std::atomic<bool>& run)
+{
+	std::string buffer;
+
+	while (run.load())
+	{
+		cin >> buffer;
+
+		auto id = std::find(concommandHashmap.begin(), concommandHashmap.end(), buffer);
+
+		if (id != concommandHashmap.end())
+		{
+			commandsToRun.push_back((id - concommandHashmap.begin()));
+		}
+		else 
+		{
+			cout << "Command " << buffer << " was not found" << endl;
+		}
+	}
+}
+
 PlatformerGame::PlatformerGame(int argc, char* argv[]) : Game(argc, argv), _levelIndex(-1), _level(nullptr)
 {
+	std::atomic<bool> run(true);
+	std::thread cinThread(&PlatformerGame::readConsole, this, std::ref(run));
+
+	concommands.push_back([=]() {
+		bool isPaused = PlatformerGame::GetPaused();
+		PlatformerGame::SetPaused(!isPaused);
+	});
+
+	concommandHashmap.push_back("pause");
+
+	concommands.push_back([=]() {
+		ReloadCurrentLevel();
+	});
+
+	concommandHashmap.push_back("reloadlevel");
+
 	Audio::Initialise(); //Loads slow - so do it first
 	Graphics::Initialise(argc, argv, this, 800, 480, false, 25, 25, "Platformer", 60);
 	Input::Initialise(); //Must be initialized after Graphics Initialization
@@ -25,6 +65,16 @@ PlatformerGame::PlatformerGame(int argc, char* argv[]) : Game(argc, argv), _leve
 
 PlatformerGame::~PlatformerGame(void)
 {
+}
+
+void PlatformerGame::SetPaused(bool isPaused) 
+{
+	_GamePaused = isPaused;
+}
+
+bool PlatformerGame::GetPaused()
+{
+	return _GamePaused;
 }
 
 //Loads all the content required for the game
@@ -59,6 +109,12 @@ void PlatformerGame::Update(int elapsedTime)
 		// update our level, passing down the GameTime along with all of our input states
 		_level->Update(elapsedTime);
 
+	}
+
+	while (commandsToRun.size() != 0) {
+		concommands[commandsToRun[0]]();
+		cout << "Function executed ID: " << commandsToRun[0] << endl;
+		commandsToRun.erase(commandsToRun.begin(), commandsToRun.begin() + 1);
 	}
 }
 //called every frame to draw the game

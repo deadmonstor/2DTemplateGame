@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Level.h"
+#include <atomic>
+#include <functional>
 
 #include "S2D/S2D.h" //Game is built with a pre-release version of S2D.
 
@@ -52,6 +54,15 @@ public:
 	void ReloadCurrentLevel();
 	void DrawHud();
 	void UpdateLevelEditor();
+	void readConsole(std::atomic<bool>& run);
+	void SetPaused(bool isPaused);
+
+	std::vector<std::function<void(void)>> concommands;
+	std::vector<std::string> concommandHashmap;
+
+	std::vector<int> commandsToRun;
+
+	bool GetPaused();
 
 	static int TotalTime;
 };
